@@ -51,22 +51,19 @@ export default function RigJBDBuilder() {
   };
 
   const handleGeneratePDF = async () => {
-    console.log("📤 Sending data to /api/generate-jbd", {
-      operation, rig, pic, lofHazard, workers, tasks
-    });
-
+    console.log("📤 Generate PDF clicked");
     try {
       const res = await fetch('/api/generate-jbd', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ operation, rig, pic, lofHazard, workers, tasks })
       });
-
+      console.log("📨 Response received", res);
       if (!res.ok) throw new Error("PDF generation failed");
 
       const blob = await res.blob();
       const url = URL.createObjectURL(blob);
-      console.log("✅ PDF Blob URL:", url, typeof url);
+      console.log("✅ Blob URL generated", url);
       setPdfBlobUrl(url);
     } catch (err) {
       console.error("❌ Error generating PDF:", err);
@@ -131,7 +128,6 @@ export default function RigJBDBuilder() {
       </div>
       <div className="grid grid-cols-2 gap-4">
         <Input placeholder="Task Step" value={taskStep} onChange={(e) => setTaskStep(e.target.value)} />
-        {console.log("👀 Workers:", workers)}
         <Select onValueChange={setSelectedWorker} value={selectedWorker}>
           {workers.map((w, i) => {
             const label = typeof w === 'string' ? w : JSON.stringify(w);
@@ -152,8 +148,13 @@ export default function RigJBDBuilder() {
         })}
       </ul>
       <Button onClick={handleGeneratePDF} className="w-full bg-green-600 text-white mt-4">Generate PDF Preview</Button>
-      {typeof pdfBlobUrl === 'string' && pdfBlobUrl.startsWith('blob:') && (
-        <iframe src={pdfBlobUrl} title="PDF Preview" className="w-full h-[800px] border mt-4" />
+      {typeof pdfBlobUrl === 'string' && pdfBlobUrl.startsWith('blob:') ? (
+        <>
+          <p className="text-sm text-green-600 mt-2">✅ PDF generated below</p>
+          <iframe src={pdfBlobUrl} title="PDF Preview" className="w-full h-[800px] border mt-2" />
+        </>
+      ) : (
+        <p className="text-sm text-red-600 mt-2">❌ No PDF to preview yet</p>
       )}
     </div>
   );
